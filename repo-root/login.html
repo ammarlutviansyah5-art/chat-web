@@ -1,0 +1,139 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ChatApp • Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0e0e0e;--bg2:#1a1a1a;--bg3:#242424;--surface:#1f1f1f;--border:rgba(255,255,255,.08);--text:#f2f2f2;--text2:#a0a0a0;--accent:#ff6b2b;--accent2:#ff8c52;--shadow:0 18px 60px rgba(0,0,0,.35);font-family:'DM Sans',sans-serif}
+    *{box-sizing:border-box} html,body{height:100%;margin:0;background:radial-gradient(1200px 700px at 50% -10%, rgba(255,107,43,.12), transparent 55%),var(--bg);color:var(--text);font-family:'DM Sans',sans-serif} body{display:flex;align-items:center;justify-content:center;padding:18px}
+    .card{width:100%;max-width:430px;background:linear-gradient(180deg, rgba(255,255,255,.02), transparent 35%),var(--surface);border:1px solid var(--border);border-radius:28px;box-shadow:var(--shadow);overflow:hidden}
+    .hero{padding:28px 24px 18px;border-bottom:1px solid var(--border)}
+    .brand{font-size:28px;font-weight:800;letter-spacing:-.8px}
+    .sub{color:var(--text2);font-size:14px;line-height:1.5;margin-top:8px}
+    .tabs{display:flex;gap:8px;padding:14px 14px 0}
+    .tab{flex:1;padding:12px 10px;border-radius:14px;background:var(--bg3);color:var(--text2);text-align:center;font-weight:600;border:1px solid var(--border)}
+    .tab.active{background:rgba(255,107,43,.14);color:var(--text);border-color:rgba(255,107,43,.35)}
+    .panel{display:none;padding:18px 18px 22px}.panel.active{display:block}
+    .field{margin-bottom:12px}.label{font-size:12px;color:var(--accent2);font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px}.input{width:100%;padding:14px 15px;border-radius:16px;border:1px solid var(--border);background:#131313;color:var(--text);outline:none}.input:focus{border-color:rgba(255,107,43,.65);box-shadow:0 0 0 3px rgba(255,107,43,.12)}
+    .btn{width:100%;padding:14px 16px;border-radius:16px;background:var(--accent);color:#fff;font-weight:700;border:none;margin-top:8px}.btn.secondary{background:var(--bg3);color:var(--text)}
+    .row{display:flex;gap:10px}.small{font-size:13px;color:var(--text2);line-height:1.5}.link{color:var(--accent2);font-weight:700;cursor:pointer}
+    .otpbox{display:flex;gap:10px}.otpbox input{text-align:center;font-size:20px;letter-spacing:8px;font-weight:800}
+    .msg{min-height:20px;font-size:13px;color:#ff8b8b;margin-top:10px}
+    .msg.ok{color:#7ddc92}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="hero">
+      <div class="brand">ChatApp</div>
+      <div class="sub">Masuk untuk melanjutkan ke ruang chat, status, dan notifikasi realtime.</div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" data-tab="login">Sign In</button>
+      <button class="tab" data-tab="register">Sign Up</button>
+      <button class="tab" data-tab="forgot">Lupa Password</button>
+    </div>
+    <div class="panel active" id="login-panel">
+      <div class="field"><div class="label">Email</div><input class="input" id="login-email" type="email" placeholder="nama@email.com"></div>
+      <div class="field"><div class="label">Password</div><input class="input" id="login-password" type="password" placeholder="••••••••"></div>
+      <button class="btn" id="login-btn">Masuk</button>
+      <div class="msg" id="login-msg"></div>
+    </div>
+    <div class="panel" id="register-panel">
+      <div class="field"><div class="label">Nama</div><input class="input" id="reg-name" type="text" placeholder="Nama kamu"></div>
+      <div class="field"><div class="label">Email</div><input class="input" id="reg-email" type="email" placeholder="nama@email.com"></div>
+      <div class="field"><div class="label">Password</div><input class="input" id="reg-password" type="password" placeholder="Minimal 6 karakter"></div>
+      <button class="btn" id="reg-send-btn">Kirim OTP</button>
+      <div class="field" style="margin-top:14px"><div class="label">Kode OTP</div><input class="input" id="reg-otp" inputmode="numeric" placeholder="Masukkan kode yang dikirim"></div>
+      <button class="btn secondary" id="reg-verify-btn">Verifikasi & Buat Akun</button>
+      <div class="msg" id="reg-msg"></div>
+    </div>
+    <div class="panel" id="forgot-panel">
+      <div class="field"><div class="label">Email</div><input class="input" id="fp-email" type="email" placeholder="nama@email.com"></div>
+      <button class="btn" id="fp-send-btn">Kirim OTP Reset</button>
+      <div class="field" style="margin-top:14px"><div class="label">Kode OTP</div><input class="input" id="fp-otp" inputmode="numeric" placeholder="Masukkan kode OTP"></div>
+      <div class="field"><div class="label">Password Baru</div><input class="input" id="fp-pass" type="password" placeholder="Password baru"></div>
+      <button class="btn secondary" id="fp-verify-btn">Reset Password</button>
+      <div class="msg" id="fp-msg"></div>
+    </div>
+  </div>
+  <script>
+    const API_BASE = '/api';
+    const post = async (path, body) => {
+      const res = await fetch(API_BASE + path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Terjadi kesalahan');
+      return data;
+    };
+    const setMsg = (id, text, ok=false) => {
+      const el = document.getElementById(id); el.textContent = text || ''; el.className = 'msg' + (ok ? ' ok' : '');
+    };
+    document.querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab + '-panel').classList.add('active');
+    }));
+    document.getElementById('login-btn').onclick = async () => {
+      setMsg('login-msg', '');
+      try {
+        const data = await post('/auth/login', {
+          email: document.getElementById('login-email').value,
+          password: document.getElementById('login-password').value
+        });
+        localStorage.setItem('chatapp_token', data.token);
+        location.href = '/app';
+      } catch (e) { setMsg('login-msg', e.message); }
+    };
+    document.getElementById('reg-send-btn').onclick = async () => {
+      setMsg('reg-msg', 'Mengirim OTP...');
+      try {
+        await post('/auth/register-init', {
+          name: document.getElementById('reg-name').value,
+          email: document.getElementById('reg-email').value,
+          password: document.getElementById('reg-password').value
+        });
+        setMsg('reg-msg', 'OTP terkirim. Cek email kamu.', true);
+      } catch (e) { setMsg('reg-msg', e.message); }
+    };
+    document.getElementById('reg-verify-btn').onclick = async () => {
+      setMsg('reg-msg', 'Verifikasi...');
+      try {
+        const data = await post('/auth/register-verify', {
+          email: document.getElementById('reg-email').value,
+          code: document.getElementById('reg-otp').value
+        });
+        localStorage.setItem('chatapp_token', data.token);
+        location.href = '/app';
+      } catch (e) { setMsg('reg-msg', e.message); }
+    };
+    document.getElementById('fp-send-btn').onclick = async () => {
+      setMsg('fp-msg', 'Mengirim OTP...');
+      try {
+        await post('/auth/request-reset', { email: document.getElementById('fp-email').value });
+        setMsg('fp-msg', 'OTP reset terkirim.', true);
+      } catch (e) { setMsg('fp-msg', e.message); }
+    };
+    document.getElementById('fp-verify-btn').onclick = async () => {
+      setMsg('fp-msg', 'Reset password...');
+      try {
+        await post('/auth/reset-verify', {
+          email: document.getElementById('fp-email').value,
+          code: document.getElementById('fp-otp').value,
+          newPassword: document.getElementById('fp-pass').value
+        });
+        setMsg('fp-msg', 'Password berhasil diperbarui.', true);
+      } catch (e) { setMsg('fp-msg', e.message); }
+    };
+  </script>
+</body>
+</html>
